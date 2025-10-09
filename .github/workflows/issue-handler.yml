@@ -47,4 +47,4 @@ jobs:
           Available Area Labels: $AREA_LABELS
           Also add 'bug' or 'enhancement' label based on the issue type.
 
-          Generate and execute the gh issue edit command with --add-label flags."
+          Generate and execute the gh issue edit command with --add-label flags." --allow-all-tools
