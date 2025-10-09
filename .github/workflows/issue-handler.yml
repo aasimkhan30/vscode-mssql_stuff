@@ -3,6 +3,11 @@ name: Issue Handler
 on:
   issues:
     types: [opened, edited]
+  workflow_call:
+    secrets:
+      COPILOT_TOKEN:
+        description: 'GitHub PAT with Copilot access'
+        required: true
 
 jobs:
   handle-issue:
@@ -11,7 +16,6 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
-      copilot_messages: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,14 +25,19 @@ jobs:
 
       - name: Use Copilot to analyze issue and add labels
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |
+          # Fetch all area labels from the repository
+          AREA_LABELS=$(gh label list --repo $REPO --search "Area -" --limit 100 --json name --jq '.[].name' | sed 's/Area - //' | tr '\n' ', ' | sed 's/, $//')
+
+          echo "Available area labels: $AREA_LABELS"
+
           # Use GitHub Copilot CLI to analyze the issue and determine area label
-          AREA_PROMPT="Based on this issue, determine the most appropriate area. Choose from: Editor, Query, Connection, ObjectExplorer, Debugging, Performance, Telemetry, UI, Security, Database, Configuration, Authentication, Extension. Only respond with ONE area name.
+          AREA_PROMPT="Based on this issue, determine the most appropriate area. Choose from: $AREA_LABELS. Only respond with ONE area name.
 
           Title: $ISSUE_TITLE
 
