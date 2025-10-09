@@ -37,7 +37,7 @@ jobs:
           echo "Available area labels: $AREA_LABELS"
 
           # Ask Copilot to generate and execute the gh issue edit command
-          copilot "Analyze this GitHub issue and generate a 'gh issue edit' command to add appropriate labels.
+          copilot -p "Analyze this GitHub issue and generate a 'gh issue edit' command to add appropriate labels.
 
           Issue Number: $ISSUE_NUMBER
           Repository: $REPO
