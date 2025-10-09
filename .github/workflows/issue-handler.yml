@@ -23,19 +23,17 @@ jobs:
       - name: Install GitHub Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Authenticate gh CLI
-        run: echo "${{ github.token }}" | gh auth login --with-token
-
       - name: Use Copilot to analyze issue and add labels
         env:
-          GH_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+          PIPELINE_TOKEN: ${{ github.token }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |
           # Fetch all area labels from the repository
-          AREA_LABELS=$(gh label list --repo $REPO --search "Area -" --limit 100 --json name --jq '.[].name' | tr '\n' ', ' | sed 's/, $//')
+          AREA_LABELS=$(GH_TOKEN=$PIPELINE_TOKEN gh label list --repo $REPO --search "Area -" --limit 100 --json name --jq '.[].name' | tr '\n' ', ' | sed 's/, $//')
 
           echo "Available area labels: $AREA_LABELS"
 
@@ -50,4 +48,5 @@ jobs:
           Available Area Labels: $AREA_LABELS
           Also add 'bug' or 'enhancement' label based on the issue type.
 
+          IMPORTANT: When generating the gh command, prefix it with 'GH_TOKEN=\$PIPELINE_TOKEN' to use the pipeline token for authentication.
           Generate and execute the gh issue edit command with --add-label flags." --allow-all-tools
