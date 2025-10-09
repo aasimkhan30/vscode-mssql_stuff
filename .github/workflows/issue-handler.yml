@@ -11,9 +11,13 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
+      copilot: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
 
       - name: Use Copilot to analyze issue and add labels
         env:
@@ -23,24 +27,15 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           REPO: ${{ github.repository }}
         run: |
-          # Use GitHub Copilot to analyze the issue and determine area label
+          # Use GitHub Copilot CLI to analyze the issue and determine area label
           AREA_PROMPT="Based on this issue, determine the most appropriate area. Choose from: Editor, Query, Connection, ObjectExplorer, Debugging, Performance, Telemetry, UI, Security, Database, Configuration, Authentication, Extension. Only respond with ONE area name.
 
           Title: $ISSUE_TITLE
 
           Body: $ISSUE_BODY"
 
-          # Call GitHub Models API with Copilot model for area
-          AREA_NAME=$(gh api \
-            -X POST \
-            /models/copilot/chat/completions \
-            -f model='gpt-4o' \
-            -f messages[0][role]='system' \
-            -f messages[0][content]='You are a helpful assistant that categorizes GitHub issues. Respond only with the area name, nothing else.' \
-            -f messages[1][role]='user' \
-            -f messages[1][content]="$AREA_PROMPT" \
-            -f temperature=0.3 \
-            --jq '.choices[0].message.content' | tr -d '[:space:]')
+          # Ask Copilot for the area
+          AREA_NAME=$(echo "$AREA_PROMPT" | copilot suggest -t shell | grep -v "^#" | tail -1)
 
           AREA_LABEL="Area - $AREA_NAME"
           echo "Determined area label: $AREA_LABEL"
@@ -52,16 +47,7 @@ jobs:
 
           Body: $ISSUE_BODY"
 
-          TYPE=$(gh api \
-            -X POST \
-            /models/copilot/chat/completions \
-            -f model='gpt-4o' \
-            -f messages[0][role]='system' \
-            -f messages[0][content]='You are a helpful assistant that classifies GitHub issues. Respond only with "bug" or "enhancement".' \
-            -f messages[1][role]='user' \
-            -f messages[1][content]="$TYPE_PROMPT" \
-            -f temperature=0.3 \
-            --jq '.choices[0].message.content' | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+          TYPE=$(echo "$TYPE_PROMPT" | copilot suggest -t shell | grep -v "^#" | tail -1 | tr '[:upper:]' '[:lower:]')
 
           echo "Determined type: $TYPE"
 
