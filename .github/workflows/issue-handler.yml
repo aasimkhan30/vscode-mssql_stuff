@@ -32,41 +32,19 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           # Fetch all area labels from the repository
-          AREA_LABELS=$(gh label list --repo $REPO --search "Area -" --limit 100 --json name --jq '.[].name' | sed 's/Area - //' | tr '\n' ', ' | sed 's/, $//')
+          AREA_LABELS=$(gh label list --repo $REPO --search "Area -" --limit 100 --json name --jq '.[].name' | tr '\n' ', ' | sed 's/, $//')
 
           echo "Available area labels: $AREA_LABELS"
 
-          # Use GitHub Copilot CLI to analyze the issue and determine area label
-          AREA_PROMPT="Based on this issue, determine the most appropriate area. Choose from: $AREA_LABELS. Only respond with ONE area name.
+          # Ask Copilot to generate and execute the gh issue edit command
+          copilot "Analyze this GitHub issue and generate a 'gh issue edit' command to add appropriate labels.
 
-          Title: $ISSUE_TITLE
+          Issue Number: $ISSUE_NUMBER
+          Repository: $REPO
+          Issue Title: $ISSUE_TITLE
+          Issue Body: $ISSUE_BODY
 
-          Body: $ISSUE_BODY"
+          Available Area Labels: $AREA_LABELS
+          Also add 'bug' or 'enhancement' label based on the issue type.
 
-          # Ask Copilot for the area
-          AREA_NAME=$(echo "$AREA_PROMPT" | copilot suggest -t shell | grep -v "^#" | tail -1)
-
-          AREA_LABEL="Area - $AREA_NAME"
-          echo "Determined area label: $AREA_LABEL"
-
-          # Determine if it's a bug or enhancement
-          TYPE_PROMPT="Based on this issue, is it a bug report or a feature/enhancement request? Only respond with 'bug' or 'enhancement'.
-
-          Title: $ISSUE_TITLE
-
-          Body: $ISSUE_BODY"
-
-          TYPE=$(echo "$TYPE_PROMPT" | copilot suggest -t shell | grep -v "^#" | tail -1 | tr '[:upper:]' '[:lower:]')
-
-          echo "Determined type: $TYPE"
-
-          # Add the labels to the issue
-          if [ -n "$AREA_LABEL" ]; then
-            gh issue edit $ISSUE_NUMBER --repo $REPO --add-label "$AREA_LABEL"
-            echo "Added label $AREA_LABEL to issue #$ISSUE_NUMBER"
-          fi
-
-          if [ -n "$TYPE" ]; then
-            gh issue edit $ISSUE_NUMBER --repo $REPO --add-label "$TYPE"
-            echo "Added label $TYPE to issue #$ISSUE_NUMBER"
-          fi
+          Generate and execute the gh issue edit command with --add-label flags."
