@@ -37,8 +37,8 @@ jobs:
 
           echo "Available area labels: $AREA_LABELS"
 
-          # Ask Copilot to generate and execute the gh issue edit command
-          copilot -p "Analyze this GitHub issue and generate a 'gh issue edit' command to add appropriate labels.
+          # Ask Copilot to analyze and handle the issue
+          copilot -p "Analyze this GitHub issue and perform the following tasks:
 
           Issue Number: $ISSUE_NUMBER
           Repository: $REPO
@@ -46,7 +46,13 @@ jobs:
           Issue Body: $ISSUE_BODY
 
           Available Area Labels: $AREA_LABELS
-          Also add 'bug' or 'enhancement' label based on the issue type.
 
-          IMPORTANT: When generating the gh command, prefix it with 'GH_TOKEN=\$PIPELINE_TOKEN' to use the pipeline token for authentication.
-          Generate and execute the gh issue edit command with --add-label flags." --allow-all-tools
+          Tasks:
+          1. Check if the issue has enough information. If not, add 'needs more info' label.
+          2. Search for potential duplicate issues using: GH_TOKEN=\$PIPELINE_TOKEN gh issue list --repo $REPO --search 'is:issue <relevant keywords>' --limit 10 --json number,title,url
+          3. If duplicates found, add a comment with: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body 'Possible duplicates:\n- #<number>: <title> (<url>)\n...'
+          4. Add appropriate area label from: $AREA_LABELS
+          5. Add 'bug' or 'enhancement' label based on issue type.
+
+          IMPORTANT: Prefix ALL gh commands with 'GH_TOKEN=\$PIPELINE_TOKEN' for authentication.
+          Execute all necessary commands." --allow-all-tools
