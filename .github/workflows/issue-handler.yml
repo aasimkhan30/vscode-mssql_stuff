@@ -37,6 +37,10 @@ jobs:
 
           echo "Available area labels: $AREA_LABELS"
 
+          # Fetch all open issues and save to JSON file
+          GH_TOKEN=$PIPELINE_TOKEN gh issue list --repo $REPO --state open --limit 500 --json number,title,body,labels,url > open_issues.json
+          echo "Fetched $(cat open_issues.json | jq '. | length') open issues"
+
           # Ask Copilot to analyze and handle the issue
           copilot -p "Analyze this GitHub issue and perform the following tasks:
 
@@ -60,12 +64,15 @@ jobs:
              - Suggests what else might be helpful based on the issue context
              - Keep the tone friendly and helpful
              Use: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body '<your personalized comment>'
-          2. Search for duplicate issues by:
-             - Extracting key technical terms, error messages, and feature descriptions from the issue
-             - Searching using: GH_TOKEN=\$PIPELINE_TOKEN gh issue list --repo $REPO --search 'is:issue <relevant keywords>' --limit 20 --json number,title,url,body
-             - Analyzing the results to identify true duplicates (not just related issues)
-             - ONLY if you find actual duplicates with the same core problem, add a comment listing them with: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body 'Possible duplicates:\n- #<number>: <title> (<url>)\n...'
-             - Add 'duplicate' label only if highly confident it's a duplicate
+          2. Search for duplicate issues:
+             - Read the open_issues.json file which contains all open issues
+             - Analyze the issues to find duplicates by comparing:
+               * Similar error messages or stack traces
+               * Same feature requests
+               * Identical symptoms or behaviors described
+               * Similar technical components mentioned
+             - If you find actual duplicates (issues describing the exact same problem), add a comment with: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body 'Possible duplicates found:\n- #<number>: <title>\n- #<number>: <title>\n\nPlease check if any of these match your issue.'
+             - Only add 'duplicate' label if you're very confident it's a duplicate of a specific issue
           4. Add appropriate area label from: $AREA_LABELS
           5. Add 'bug' or 'enhancement' label based on issue type.
 
