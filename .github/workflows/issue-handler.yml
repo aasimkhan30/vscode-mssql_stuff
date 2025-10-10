@@ -6,7 +6,7 @@ on:
   workflow_call:
     secrets:
       COPILOT_TOKEN:
-        description: 'GitHub PAT with Copilot access'
+        description: "GitHub PAT with Copilot access"
         required: true
 
 jobs:
@@ -48,7 +48,18 @@ jobs:
           Available Area Labels: $AREA_LABELS
 
           Tasks:
-          1. Check if the issue has enough information. If not, add 'needs more info' label.
+          1. Check if the issue has enough information. If not, add 'needs more info' label and post a context-aware comment that:
+             - Specifically identifies what information is missing from the issue
+             - Asks targeted questions based on the issue type (e.g., for bugs: reproduction steps, for features: use case)
+             - Requests additional helpful details like:
+               * Steps to reproduce (if bug report)
+               * Expected vs actual behavior (if not clear)
+               * Version information (extension, VS Code, SQL Server/database version)
+               * Error messages, stack traces, or screenshots
+               * Database connection details (type, authentication method - without credentials)
+             - Suggests what else might be helpful based on the issue context
+             - Keep the tone friendly and helpful
+             Use: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body '<your personalized comment>'
           2. Search for potential duplicate issues using: GH_TOKEN=\$PIPELINE_TOKEN gh issue list --repo $REPO --search 'is:issue <relevant keywords>' --limit 10 --json number,title,url
           3. If duplicates found, add a comment with: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body 'Possible duplicates:\n- #<number>: <title> (<url>)\n...'
           4. Add appropriate area label from: $AREA_LABELS
