@@ -20,6 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Clone repository copy
+        run: git clone . repo-clone
+
       - name: Install GitHub Copilot CLI
         run: npm install -g @github/copilot
 
@@ -73,6 +76,7 @@ jobs:
                * Similar technical components mentioned
              - If you find actual duplicates (issues describing the exact same problem), add a comment with: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body 'Possible duplicates found:\n- #<number>: <title>\n- #<number>: <title>\n\nPlease check if any of these match your issue.'
              - Only add 'duplicate' label if you're very confident it's a duplicate of a specific issue
+          3. Analyze where the bug is most likely located based on the issue context and repository knowledge. Post a comment that lists the top 5 most relevant files or specific code lines to investigate, with a short explanation for each. Use: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body '<your analysis with top 5 files/lines>'
           4. Add appropriate area label from: $AREA_LABELS
           5. Add 'bug' or 'enhancement' label based on issue type.
 
