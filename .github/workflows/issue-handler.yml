@@ -66,6 +66,44 @@ jobs:
                * Database connection details (type, authentication method - without credentials)
              - Suggests what else might be helpful based on the issue context
              - Keep the tone friendly and helpful
+             - If this is a bug report, ALWAYS include the following collapsible log collection instructions:
+
+               We need more info to debug your issue. If you could attach your logs (ensure no private data is in them), it would help us fix the issue faster.
+
+               <details>
+               <summary>Steps to Collect Logs</summary>
+
+               ### 1. Enable Detailed Logging
+               - Open Settings
+               - Find **Mssql: Tracing Level** and change to **All**
+               - Restart VS Code
+
+               ### 2. Set Log Level to Trace
+               - Open Command Palette (View → Command Palette)
+               - Run: **Developer: Set Log Level...**
+               - Set to **Trace**
+
+               ### 3. Reproduce the Issue
+               - Perform the actions that lead to the issue
+
+               ### 4. Collect Console Logs
+               - Open Developer Tools (Help → Toggle Developer Tools)
+               - Click Console tab
+               - Press CTRL+A (or CMD+A on Mac) to select all
+               - Copy and save to **console.log**
+               - Attach to this issue
+               - Close Developer Tools (Help → Toggle Developer Tools)
+
+               ### 5. Collect Application Logs
+               - Open Command Palette (View → Command Palette)
+               - Run: **Developer: Open Logs Folder**
+               - Zip the entire folder
+               - Attach to this issue
+
+               ### 6. Revert Logging Settings
+               - After uploading logs, revert the changes from steps 1 and 2
+
+               </details>
              Use: GH_TOKEN=\$PIPELINE_TOKEN gh issue comment $ISSUE_NUMBER --repo $REPO --body '<your personalized comment>'
           2. Search for duplicate issues:
              - Read the open_issues.json file which contains all open issues
